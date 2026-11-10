@@ -1,4 +1,5 @@
 import express from 'express';
+import helmet from 'helmet';
 import morgan from 'morgan';
 import cors from 'cors';
 import authRoutes from './routes/auth.js';
@@ -7,6 +8,28 @@ import userRoutes from './routes/users.js';
 import reviewRoutes from './routes/reviews.js';
 
 const app = express();
+
+// Security headers, including a strict Content-Security-Policy.
+// The browser enforces it: scripts may only load from our own origin,
+// and inline script (onerror=, onload=, <script>...</script>) is refused.
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],            // NO 'unsafe-inline'
+        styleSrc: ["'self'"],
+        imgSrc: ["'self'", 'data:'],
+        connectSrc: ["'self'", 'http://localhost:4000'],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        frameAncestors: ["'none'"],
+        formAction: ["'self'"],
+      },
+    },
+  })
+);
 
 app.use(morgan('dev'));
 app.use(cors({ origin: 'http://localhost:5175', credentials: false }));
